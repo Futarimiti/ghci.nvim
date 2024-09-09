@@ -1,0 +1,109 @@
+*ghci.txt*
+
+Author:  Carman Fu <https://github.com/Futarimiti>
+Repo:    https://github.com/Futarimiti/ghci.nvim
+Licence: WTFPL
+
+==============================================================================
+CONTENTS                                                *ghci-contents*
+
+INTRODUCTION........................................|ghci-introduction|
+CONFIGURATION......................................|ghci-configuration|
+USAGE......................................................|ghci-usage|
+TRADEOFFS..............................................|ghci-tradeoffs|
+PLUGIN STRUCTURE................................|ghci-plugin-structure|
+
+==============================================================================
+INTRODUCTION                                        *ghci-introduction*
+
+GHCi stands for the Glasgow Haskell Compiler interactive environment, an
+interactive REPL for Haskell the purely functional programming language.
+GHCi allows users to load Haskell scripts, experiment with code, and evaluate
+Haskell expressions in real-time.  It’s a powerful tool for debugging,
+learning, and testing Haskell code.
+
+For more information about Haskell and GHC, look on the official Haskell site:
+
+	https://www.haskell.org
+
+`ghci.nvim` lets one access GHCi within the editor and edit their prompt like
+a normal vim buffer.  The prompt will be sent to GHCi to evaluate upon
+inserting `<CR>`.  Results or errors will be notified right away.
+
+==============================================================================
+CONFIGURATION                                      *ghci-configuration*
+
+>lua
+    ---@class ghci.Config.Commands
+    ---@field enable boolean
+
+    ---@class ghci.Config.Output
+    ---@field maximum integer Maximum number of characters for output, exceeding characters will be truncated and appended '...'. This is to avoid infinite output like "[1..]"
+    ---@field on_stdout fun(string) What to do with ghci feedback from stdout
+    ---@field on_stderr fun(string) What to do with ghci feedback from stderr
+
+    -- Buffer and window local options should go to after/ftplugin/ghci.{vim,lua}
+    ---@class ghci.Config
+    ---@field commands ghci.Config.Commands User command settings
+    ---@field cmd string[] Default command to start ghci
+    ---@field confirm boolean Prompt for confirm if spawning in a window containing modified buffer
+    ---@field output ghci.Config.Output Output settings
+    require('ghci').setup {
+      commands = {
+	enable = true,
+      },
+      cmd = { 'ghci' },
+      confirm = true,
+      output = {
+	maximum = 10000,
+	on_stdout = function(msg) vim.notify(msg, vim.log.levels.INFO) end,
+	on_stderr = function(msg) vim.notify(msg, vim.log.levels.ERROR) end,
+      },
+    }
+<
+
+The configuration options here may not be always up-to-date.
+Check `ghci/config.lua`.
+
+==============================================================================
+USAGE                                                      *ghci-usage*
+
+Lua API                                                  *ghci-lua-api*
+
+API functions are available in `require('ghci')` once properly setup.
+
+spawn([{win} [, {files} [, {cmd} [, {cwd}]]]])           *GHCi.spawn()*
+    Spawn and attach a GHCi session.
+
+    Parameters: ~
+      • {win}   `integer?` Window handle, current window by default
+      • {files} `string[]?` Any files to load into GHCi, `[]` by default
+      • {cmd}   `string[]?` Launching command for GHCi, `['ghci']` by default
+      • {cwd}   `string?` `cwd` for the job, current directory by default
+
+    Returns: ~
+      • {cwd}   `vim.SystemObj` Job spawned
+
+Commands                                                *ghci-commands*
+
+                                                           *ghci-:GHCi*
+:GHCi [files]           Spawn GHCi session and attach to the current window.
+
+==============================================================================
+TRADEOFFS                                              *ghci-tradeoffs*
+
+- No tab completion
+
+==============================================================================
+PLUGIN STRUCTURE                                *ghci-plugin-structure*
+
+>
+    ghci
+    ├── init.lua
+    ├── config.lua -> config spec and defaults
+    ├── core.lua -> interal module
+    ├── health.lua -> healthcheck
+    └── commands.lua -> user command setups
+
+
+vim:tw=78:ts=8:noet:ft=help:norl:
