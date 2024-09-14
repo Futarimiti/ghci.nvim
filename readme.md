@@ -3,6 +3,12 @@
 Use GHCi sessions in a `q:`-like command-line window that
 * When you insert `<CR>`, line you are currently on will be sent to ghci, outputs will be notified
 
+
+
+https://github.com/user-attachments/assets/53f53f8c-6e49-42fd-bd8b-9808614e15d8
+
+
+
 Basically, run GHCi/cabal repl/stack ghci but now you don't need to leave the editor
 
 ## Features
