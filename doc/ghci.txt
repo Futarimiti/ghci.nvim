@@ -65,6 +65,9 @@ CONFIGURATION                                      *ghci-configuration*
 The configuration options here may not be always up-to-date.
 Check `ghci/config.lua`.
 
+GHCi scratchpads use `ghci` as their filetype. To configure options or keymaps
+local to the scratchpad, put them into `after/ftplugin/ghci.{vim,lua}`.
+
 ==============================================================================
 USAGE                                                      *ghci-usage*
 
