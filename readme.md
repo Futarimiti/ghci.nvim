@@ -41,7 +41,10 @@ See doc
 
 ## Limitations/TODO
 
-- [ ] 
+- [ ] No way to interrupt evaluation, basically done when stuck
+- [ ] Use a binding (`_print` or something) for custom interactive print, which pollutes GHCi environment 
+    - [ ] Problematic upon `:reload`, which seems to clear that binding
+- [ ] Users must not `:set prompt` to something else - we need to know the end of output
 
 ## Similar projects
 
