@@ -125,8 +125,7 @@ GHCi.spawn = function(config, win, files, cmd, cwd)
   job:write(set_prompt)
   job:write(set_prompt_cont)
   job:write(
-    ([[let _print = putStrLn . (\str -> let firstN = take %d str in if length firstN < %d then str else firstN ++ "..." ) . show]]):format(
-      config.output.maximum,
+    ([[let _print = putStrLn . (\str -> let (xs0, xs1) = splitAt %d str in if null xs1 then xs0 else xs0 ++ "...") . show]]):format(
       config.output.maximum
     ) .. '\n'
   )
