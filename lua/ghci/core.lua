@@ -13,7 +13,7 @@ local setup_opts = function(_, job, win)
     if job:is_closing() then
       -- not sure when would this branch be triggered
       vim.notify_once('Current GHCi session has already finished', vim.log.levels.WARN)
-      return '<CR>'
+      return '<Nop>'
     else
       local line = vim.api.nvim_get_current_line()
       job:write(line .. '\n')
