@@ -116,7 +116,6 @@ GHCi.spawn = function(config, win, files, cmd, cwd)
 
   local job = vim.system(cmd, {
     cwd = cwd,
-    cmd = cmd,
     stdin = true,
     stdout = handle_stdout,
     stderr = handle_stderr,
