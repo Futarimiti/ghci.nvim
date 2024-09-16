@@ -33,14 +33,14 @@ end
 GHCi.spawn = function(config, win, files, cmd, cwd)
   win = win and (vim.api.nvim_win_is_valid(win) and win or error('not a valid window: ' .. win))
     or vim.api.nvim_get_current_win()
-  cmd = cmd or config.cmd
+  cmd = cmd or config.session.cmd
   files = files or {}
   vim.iter(files):each(function(f) table.insert(cmd, f) end)
 
   local buf = vim.api.nvim_create_buf(false, true)
 
   -- XXX
-  if config.confirm then
+  if config.attach.confirm then
     local confirm = vim.o.confirm
     vim.o.confirm = true
     vim.api.nvim_win_set_buf(win, buf)
@@ -79,12 +79,12 @@ GHCi.spawn = function(config, win, files, cmd, cwd)
     vim.schedule(function()
       if vim.endswith(buffers.stdout, prompt) then
         if buffers.stderr ~= '' then
-          config.output.on_stderr(buffers.stderr)
+          config.session.output.on_stderr(buffers.stderr)
           buffers.stderr = ''
         end
         buffers.stdout = buffers.stdout:sub(0, -(1 + #prompt)):gsub(prompt_cont, '')
         if buffers.stdout ~= '' then
-          config.output.on_stdout(buffers.stdout)
+          config.session.output.on_stdout(buffers.stdout)
           buffers.stdout = ''
         end
       end
@@ -107,8 +107,8 @@ GHCi.spawn = function(config, win, files, cmd, cwd)
   local on_exit = function(o)
     vim.schedule(function()
       vim.api.nvim_win_call(win, vim.cmd.stopinsert)
-      if buffers.stderr ~= '' then config.output.on_stderr(buffers.stderr) end
-      if buffers.stdout ~= '' then config.output.on_stdout(buffers.stdout) end
+      if buffers.stderr ~= '' then config.session.output.on_stderr(buffers.stderr) end
+      if buffers.stdout ~= '' then config.session.output.on_stdout(buffers.stdout) end
       vim.notify(('GHCi session finished with signal %d'):format(o.signal), vim.log.levels.INFO)
       vim.api.nvim_buf_delete(buf, { force = true })
     end)
@@ -125,7 +125,7 @@ GHCi.spawn = function(config, win, files, cmd, cwd)
   job:write(set_prompt_cont)
   job:write(
     ([[let _print = putStrLn . (\str -> let (xs0, xs1) = splitAt %d str in if null xs1 then xs0 else xs0 ++ "...") . show]]):format(
-      config.output.maximum
+      config.session.output.maximum
     ) .. '\n'
   )
   job:write([[:set -interactive-print _print]] .. '\n')
