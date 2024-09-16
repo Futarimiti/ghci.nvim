@@ -1,14 +1,11 @@
 local GHCi = {}
 
--- Set up ghci buffer options
+-- Set up ghci buffer in a window
 ---@param _ ghci.Config
 ---@param job vim.SystemObj
 ---@param win integer
 local setup_opts = function(_, job, win)
   local buf = vim.api.nvim_win_get_buf(win)
-  vim.bo[buf].buftype = 'nofile'
-  if not pcall(vim.treesitter.start, buf, 'haskell') then vim.bo[buf].syntax = 'haskell' end
-  vim.wo[win].statusline = '[GHCi scratchpad]'
   vim.keymap.set('i', '<CR>', function()
     if job:is_closing() then
       -- not sure when would this branch be triggered
@@ -20,6 +17,7 @@ local setup_opts = function(_, job, win)
       return '<End><CR>'
     end
   end, { buffer = buf, expr = true })
+  vim.bo[buf].buftype = 'nofile'
   vim.bo[buf].filetype = 'ghci'
 end
 
