@@ -22,6 +22,10 @@ local Config = {}
 
 ---@class ghci.Config.Attach
 ---@field confirm boolean Prompt for confirm if spawned in a window with a modified buffer
+---@field keymaps ghci.Config.Attach.Keymaps Keymaps settings
+
+---@class ghci.Config.Attach.Keymaps
+---@field enter boolean Would you like me to map <CR> to send current line to GHCi?
 
 ---@type ghci.Config
 Config.default = {
@@ -34,7 +38,10 @@ Config.default = {
       on_stderr = function(msg) vim.notify(msg, vim.log.levels.ERROR) end,
     },
   },
-  attach = { confirm = true },
+  attach = {
+    confirm = true,
+    keymaps = { enter = true },
+  },
 }
 
 return Config
