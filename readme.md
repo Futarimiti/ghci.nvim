@@ -15,25 +15,30 @@ Basically, run GHCi/cabal repl/stack ghci but now you don't need to leave the ed
 
 This plugin contaminates your environment by
 
-* Provides a lua module `ghci`; once you call `.setup` a `.spawn` function will become available
-* Provides a command `:GHCi [filename]`, quick way to spawn a session (you can disable this if you want)
+* Provides a lua module `ghci`; once you call `.setup`, function `.spawn` and `.attach` will become available
+* Provides a command `:GHCi [args]`, quick way to spawn a session (can be turned off)
 * bruh just read the source code its not that many lines
 
 ## Usage
 
 ```lua
--- can be setup multiple times, would override previous config
+-- can be setup multiple times - each time override previous config
 -- configuration & defaults see lua/ghci/config.lua and doc
 local GHCi = require('ghci').setup {...}
 
----@param win? integer Spawn in which window, current win by default
----@param files? string[] Any file to load into repl
----@param cmd? string[] Override default cmd to launch ghci for example ['cabal', 'repl']
----@param cwd? string Default current dir
-GHCi.spawn(win, files, cmd, cwd)
+-- Spawn a GHCi session.
+---@param extra? ghci.Config.Session Any extra session configuration
+---@return vim.SystemObj
+local job = GHCi.spawn()
+
+-- Attach a spawned session to a window.
+---@param job vim.SystemObj
+---@param win? integer Current window by default
+---@param extra? ghci.Config.Attach Extra attach configuration
+GHCi.attach(job)
 ```
 
-`:GHCi [files]` is equivalent to `GHCi.spawn(<current-win>, <files>)`
+`:GHCi [args]` spawns a GHCi session and attach it to current window
 
 ## Project outline
 
