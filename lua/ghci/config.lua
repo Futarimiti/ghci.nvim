@@ -19,6 +19,11 @@ local Config = {}
 ---@field maximum integer Maximum number of characters for output. Exceeding characters will be truncated. This is to avoid infinite output like "[1..]"
 ---@field on_stdout fun(string) What to do with ghci feedback from stdout
 ---@field on_stderr fun(string) What to do with ghci feedback from stderr
+---@field exit ghci.Config.Session.Output.Exit
+
+---@class ghci.Config.Session.Output.Exit
+---@field purge boolean Flush stdout and stderr output buffer upon exit?
+---@field on_exit fun(vim.SystemCompleted?) Called when session exits
 
 ---@class ghci.Config.Attach
 ---@field confirm boolean Prompt for confirm if spawned in a window with a modified buffer
@@ -36,6 +41,12 @@ Config.default = {
       maximum = 10000,
       on_stdout = function(msg) vim.notify(msg, vim.log.levels.INFO) end,
       on_stderr = function(msg) vim.notify(msg, vim.log.levels.ERROR) end,
+      exit = {
+        purge = true,
+        on_exit = function(o)
+          vim.notify(('GHCi session finished with signal %d'):format(o.signal), vim.log.levels.INFO)
+        end,
+      },
     },
   },
   attach = {
