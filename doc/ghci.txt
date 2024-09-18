@@ -41,6 +41,7 @@ CONFIGURATION					   *ghci-configuration*
 
     ---@class ghci.Config.Commands
     ---@field enable boolean
+    ---@field complete boolean Enable tab completion for options, otherwise just filename completion
 
     ---@class ghci.Config.Session
     ---@field cmd string[] Command to start ghci e.g. `{'ghci'}`, `{'stack', 'ghci', '--nix'}`
@@ -65,7 +66,10 @@ CONFIGURATION					   *ghci-configuration*
 
     ---@type ghci.Config
     require('ghci').setup {
-      commands = { enable = true },
+      commands = {
+	enable = true,
+	complete = true,
+      },
       session = {
 	cmd = { 'ghci' },
 	output = {
@@ -125,7 +129,7 @@ Commands						*ghci-commands*
 :GHCi [args]		Spawn a GHCi session and attach to the current window,
                         using no extra configuration.  `[args]` could be
 			options or files to be loaded into the session.
-			Completion not yet supported.
+			Tab completion supported.
 
 ==============================================================================
 TRADEOFFS					       *ghci-tradeoffs*
@@ -144,6 +148,7 @@ PLUGIN STRUCTURE				*ghci-plugin-structure*
     │   ├── attach.lua
     │   └── session.lua
     ├── health.lua	-> healthcheck
+    ├── complete.lua	-> command complete source
     └── init.lua
 <
 

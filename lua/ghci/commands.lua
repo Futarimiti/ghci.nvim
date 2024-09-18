@@ -21,11 +21,19 @@ Commands.setup = function(config)
       }))
       GHCi.attach(config.attach, job, win)
     end, {
+      desc = 'spawn GHCi session in current window with a command-line-window-like buffer',
       bang = false,
       bar = true,
       nargs = '*',
-      complete = 'file',
-      desc = 'spawn GHCi session in current window with a command-line-window-like buffer',
+      complete = config.commands.complete and function(arglead, _, _)
+        local options = vim
+          .iter(require('ghci.complete').options)
+          :filter(function(item) return vim.startswith(item, arglead) end)
+          :totable()
+        local files =
+          vim.iter(vim.fn.glob(arglead .. '*', true, true)):map(vim.fs.normalize):totable()
+        return vim.list_extend(options, files)
+      end or 'file',
     })
   else
     pcall(vim.api.nvim_del_user_command, 'GHCi')

@@ -10,6 +10,7 @@ local Config = {}
 
 ---@class ghci.Config.Commands
 ---@field enable boolean
+---@field complete boolean Enable tab completion for options, otherwise just filename completion
 
 ---@class ghci.Config.Session
 ---@field cmd string[] Command to start ghci e.g. `{'ghci'}`, `{'stack', 'ghci', '--nix'}`
@@ -34,7 +35,10 @@ local Config = {}
 
 ---@type ghci.Config
 Config.default = {
-  commands = { enable = true },
+  commands = {
+    enable = true,
+    complete = true,
+  },
   session = {
     cmd = { 'ghci' },
     output = {
