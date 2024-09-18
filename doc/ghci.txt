@@ -1,11 +1,11 @@
 *ghci.txt*
 
 Author:  Carman Fu <https://github.com/Futarimiti>
-Repo:    https://github.com/Futarimiti/ghci.nvim
+Repo:	 https://github.com/Futarimiti/ghci.nvim
 Licence: WTFPL
 
 ==============================================================================
-CONTENTS                                                *ghci-contents*
+CONTENTS						*ghci-contents*
 
 INTRODUCTION........................................|ghci-introduction|
 CONFIGURATION......................................|ghci-configuration|
@@ -14,7 +14,7 @@ TRADEOFFS..............................................|ghci-tradeoffs|
 PLUGIN STRUCTURE................................|ghci-plugin-structure|
 
 ==============================================================================
-INTRODUCTION                                        *ghci-introduction*
+INTRODUCTION					    *ghci-introduction*
 
 GHCi stands for the Glasgow Haskell Compiler interactive environment, an
 interactive REPL for Haskell the purely functional programming language.
@@ -31,33 +31,58 @@ a normal vim buffer.  The prompt will be sent to GHCi to evaluate upon
 inserting `<CR>`.  Results or errors will be notified right away.
 
 ==============================================================================
-CONFIGURATION                                      *ghci-configuration*
+CONFIGURATION					   *ghci-configuration*
 
 >lua
+    ---@class ghci.Config
+    ---@field commands ghci.Config.Commands User command settings
+    ---@field session ghci.Config.Session Settings for spawning ghci sessions
+    ---@field attach ghci.Config.Attach Settings for attaching ghci session to a window
+
     ---@class ghci.Config.Commands
     ---@field enable boolean
 
-    ---@class ghci.Config.Output
-    ---@field maximum integer Maximum number of characters for output, exceeding characters will be truncated and appended '...'. This is to avoid infinite output like "[1..]"
+    ---@class ghci.Config.Session
+    ---@field cmd string[] Command to start ghci e.g. `{'ghci'}`, `{'stack', 'ghci', '--nix'}`
+    ---@field output ghci.Config.Session.Output Output settings
+
+    ---@class ghci.Config.Session.Output
+    ---@field maximum integer Maximum number of characters for output. Exceeding characters will be truncated. This is to avoid infinite output like "[1..]"
     ---@field on_stdout fun(string) What to do with ghci feedback from stdout
     ---@field on_stderr fun(string) What to do with ghci feedback from stderr
+    ---@field exit ghci.Config.Session.Output.Exit
 
-    -- Buffer and window local options should go to after/ftplugin/ghci.{vim,lua}
-    ---@class ghci.Config
-    ---@field commands ghci.Config.Commands User command settings
-    ---@field cmd string[] Default command to start ghci
-    ---@field confirm boolean Prompt for confirm if spawning in a window containing modified buffer
-    ---@field output ghci.Config.Output Output settings
+    ---@class ghci.Config.Session.Output.Exit
+    ---@field purge boolean Flush stdout and stderr output buffer upon exit?
+    ---@field on_exit fun(vim.SystemCompleted?) Called when session exits
+
+    ---@class ghci.Config.Attach
+    ---@field confirm boolean Prompt for confirm if spawned in a window with a modified buffer
+    ---@field keymaps ghci.Config.Attach.Keymaps Keymaps settings
+
+    ---@class ghci.Config.Attach.Keymaps
+    ---@field enter boolean Would you like me to map <CR> to send current line to GHCi?
+
+    ---@type ghci.Config
     require('ghci').setup {
-      commands = {
-	enable = true,
+      commands = { enable = true },
+      session = {
+	cmd = { 'ghci' },
+	output = {
+	  maximum = 10000,
+	  on_stdout = function(msg) vim.notify(msg, vim.log.levels.INFO) end,
+	  on_stderr = function(msg) vim.notify(msg, vim.log.levels.ERROR) end,
+	  exit = {
+	    purge = true,
+	    on_exit = function(o)
+	      vim.notify(('GHCi session finished with signal %d'):format(o.signal), vim.log.levels.INFO)
+	    end,
+	  },
+	},
       },
-      cmd = { 'ghci' },
-      confirm = true,
-      output = {
-	maximum = 10000,
-	on_stdout = function(msg) vim.notify(msg, vim.log.levels.INFO) end,
-	on_stderr = function(msg) vim.notify(msg, vim.log.levels.ERROR) end,
+      attach = {
+	confirm = true,
+	keymaps = { enter = true },
       },
     }
 <
@@ -69,44 +94,57 @@ GHCi scratchpads use `ghci` as their filetype. To configure options or keymaps
 local to the scratchpad, put them into `after/ftplugin/ghci.{vim,lua}`.
 
 ==============================================================================
-USAGE                                                      *ghci-usage*
+USAGE							   *ghci-usage*
 
-Lua API                                                  *ghci-lua-api*
+Lua API							 *ghci-lua-api*
 
 API functions are available in `require('ghci')` once properly setup.
 
-spawn([{win} [, {files} [, {cmd} [, {cwd}]]]])           *GHCi.spawn()*
-    Spawn and attach a GHCi session.
+spawn([{config}])					 *GHCi.spawn()*
+    Spawn a GHCi session.
 
     Parameters: ~
-      • {win}   `integer?` Window handle, current window by default
-      • {files} `string[]?` Any files to load into GHCi, `[]` by default
-      • {cmd}   `string[]?` Launching command for GHCi, `['ghci']` by default
-      • {cwd}   `string?` `cwd` for the job, current directory by default
+      • {config}  (`ghci.Config.Session?`) Additional session configuration to
+		  override the provided.
 
-    Returns: ~
-      • {cwd}   `vim.SystemObj` Job spawned
+    Return: ~
+	(`vim.SystemObj`) Job spawned after some initialising work.
 
-Commands                                                *ghci-commands*
+attach({job} [, {win} [, {config}]])			*GHCi.attach()*
+    Try to create a new `ghci` scratch buffer in the destination `win`.
 
-                                                           *ghci-:GHCi*
-:GHCi [files]           Spawn GHCi session and attach to the current window.
+    Parameters: ~
+      • {job}	  (`vim.SystemObj`) GHCi job; spawn one with |GHCi.spawn()|.
+      • {win}	  (`integer?`) Window handle, current window by default.
+      • {config}  (`ghci.Config.Attach?`) Additional attaching configuration to
+		  override the provided.
+
+Commands						*ghci-commands*
+
+							   *ghci-:GHCi*
+:GHCi [args]		Spawn a GHCi session and attach to the current window,
+                        using no extra configuration. `[args]` could be
+			options or files to be loaded into the session.
+			Completion not yet supported.
 
 ==============================================================================
-TRADEOFFS                                              *ghci-tradeoffs*
+TRADEOFFS					       *ghci-tradeoffs*
 
 - No tab completion
 
 ==============================================================================
-PLUGIN STRUCTURE                                *ghci-plugin-structure*
+PLUGIN STRUCTURE				*ghci-plugin-structure*
 
 >
     ghci
-    ├── init.lua
-    ├── config.lua -> config spec and defaults
-    ├── core.lua -> interal module
-    ├── health.lua -> healthcheck
-    └── commands.lua -> user command setups
+    ├── commands.lua	-> user commands setups
+    ├── config.lua	-> config spec and defaults
+    ├── core		-> the... core module
+    │   ├── init.lua
+    │   ├── attach.lua
+    │   └── session.lua
+    ├── health.lua	-> healthcheck
+    └── init.lua
 <
 
 vim:tw=78:ts=8:noet:ft=help:norl:
