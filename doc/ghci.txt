@@ -90,7 +90,7 @@ CONFIGURATION					   *ghci-configuration*
 The configuration options here may not be always up-to-date.
 Check `ghci/config.lua`.
 
-GHCi scratchpads use `ghci` as their filetype. To configure options or keymaps
+GHCi scratchpads use `ghci` as their filetype.  To configure options or keymaps
 local to the scratchpad, put them into `after/ftplugin/ghci.{vim,lua}`.
 
 ==============================================================================
@@ -123,7 +123,7 @@ Commands						*ghci-commands*
 
 							   *ghci-:GHCi*
 :GHCi [args]		Spawn a GHCi session and attach to the current window,
-                        using no extra configuration. `[args]` could be
+                        using no extra configuration.  `[args]` could be
 			options or files to be loaded into the session.
 			Completion not yet supported.
 
